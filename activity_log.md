@@ -1,3 +1,4 @@
 - 2025-09-22T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2025-09-27T09:11:23: feat: optimize quantized attention kernel
 - 2025-10-01T09:11:23: chore: update neural network layer abstractions
+- 2025-10-05T09:11:23: feat: support 4-bit and 8-bit quantized weights
