@@ -3,3 +3,4 @@
 - 2025-10-01T09:11:23: chore: update neural network layer abstractions
 - 2025-10-05T09:11:23: feat: support 4-bit and 8-bit quantized weights
 - 2025-10-10T09:11:23: refactor: async prompt evaluation pipeline
+- 2025-10-15T09:11:23: refactor: async prompt evaluation pipeline
