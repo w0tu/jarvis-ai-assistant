@@ -10,3 +10,4 @@
 - 2025-11-02T09:11:23: refactor: Ollama GGUF model loader parameters
 - 2025-11-06T09:11:23: fix: token streaming buffer overflow in local runtime
 - 2025-11-11T09:11:23: perf: memory-mapped model weights streaming
+- 2025-11-15T09:11:23: perf: memory-mapped model weights streaming
