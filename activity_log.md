@@ -12,3 +12,4 @@
 - 2025-11-11T09:11:23: perf: memory-mapped model weights streaming
 - 2025-11-15T09:11:23: perf: memory-mapped model weights streaming
 - 2025-11-21T09:11:23: fix: context window tokenizer truncation edge case
+- 2025-11-28T09:11:23: feat: support 4-bit and 8-bit quantized weights
