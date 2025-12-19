@@ -17,3 +17,4 @@
 - 2025-12-07T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2025-12-11T09:11:23: fix: token streaming buffer overflow in local runtime
 - 2025-12-15T09:11:23: feat: support 4-bit and 8-bit quantized weights
+- 2025-12-19T09:11:23: fix: token streaming buffer overflow in local runtime
