@@ -26,3 +26,4 @@
 - 2026-01-17T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2026-01-18T11:02:32: refactor: Ollama GGUF model loader parameters
 - 2026-01-18T14:30:24: feat: optimize quantized attention kernel
+- 2026-01-18T17:58:16: fix: token streaming buffer overflow in local runtime
