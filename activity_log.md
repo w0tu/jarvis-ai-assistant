@@ -24,3 +24,4 @@
 - 2026-01-09T09:11:23: feat: optimize quantized attention kernel
 - 2026-01-13T09:11:23: feat: add temperature and top-p sampling heuristics
 - 2026-01-17T09:11:23: perf: accelerate matrix vector multiplication on CPU
+- 2026-01-18T11:02:32: refactor: Ollama GGUF model loader parameters
