@@ -31,3 +31,4 @@
 - 2026-01-19T10:25:49: docs: benchmark inference latency and memory footprints
 - 2026-01-19T12:53:41: chore: update neural network layer abstractions
 - 2026-01-19T14:21:33: feat: support 4-bit and 8-bit quantized weights
+- 2026-01-19T16:49:25: perf: memory-mapped model weights streaming
