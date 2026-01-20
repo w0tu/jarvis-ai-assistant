@@ -37,3 +37,4 @@
 - 2026-01-20T10:25:49: refactor: Ollama GGUF model loader parameters
 - 2026-01-20T13:53:41: refactor: async prompt evaluation pipeline
 - 2026-01-20T15:21:33: feat: optimize quantized attention kernel
+- 2026-01-20T18:49:25: perf: accelerate matrix vector multiplication on CPU
