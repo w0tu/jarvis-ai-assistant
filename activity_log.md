@@ -34,3 +34,4 @@
 - 2026-01-19T16:49:25: perf: memory-mapped model weights streaming
 - 2026-01-19T18:17:17: feat: optimize quantized attention kernel
 - 2026-01-19T20:45:09: refactor: async prompt evaluation pipeline
+- 2026-01-20T10:25:49: refactor: Ollama GGUF model loader parameters
