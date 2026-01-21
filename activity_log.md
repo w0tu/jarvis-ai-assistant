@@ -42,3 +42,4 @@
 - 2026-01-21T10:02:32: fix: token streaming buffer overflow in local runtime
 - 2026-01-21T12:30:24: feat: add temperature and top-p sampling heuristics
 - 2026-01-21T14:58:16: feat: add temperature and top-p sampling heuristics
+- 2026-01-21T17:26:08: perf: memory-mapped model weights streaming
