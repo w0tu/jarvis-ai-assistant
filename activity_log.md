@@ -43,3 +43,4 @@
 - 2026-01-21T12:30:24: feat: add temperature and top-p sampling heuristics
 - 2026-01-21T14:58:16: feat: add temperature and top-p sampling heuristics
 - 2026-01-21T17:26:08: perf: memory-mapped model weights streaming
+- 2026-01-21T19:54:00: chore: update neural network layer abstractions
