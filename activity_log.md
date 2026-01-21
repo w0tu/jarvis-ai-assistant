@@ -39,3 +39,4 @@
 - 2026-01-20T15:21:33: feat: optimize quantized attention kernel
 - 2026-01-20T18:49:25: perf: accelerate matrix vector multiplication on CPU
 - 2026-01-20T21:17:17: docs: benchmark inference latency and memory footprints
+- 2026-01-21T10:02:32: fix: token streaming buffer overflow in local runtime
