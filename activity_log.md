@@ -47,3 +47,4 @@
 - 2026-01-21T21:22:52: fix: token streaming buffer overflow in local runtime
 - 2026-01-24T10:25:49: refactor: Ollama GGUF model loader parameters
 - 2026-01-24T13:53:41: feat: add autonomous tool execution loop
+- 2026-01-24T16:21:33: perf: accelerate matrix vector multiplication on CPU
