@@ -49,3 +49,4 @@
 - 2026-01-24T13:53:41: feat: add autonomous tool execution loop
 - 2026-01-24T16:21:33: perf: accelerate matrix vector multiplication on CPU
 - 2026-01-24T19:49:25: fix: context window tokenizer truncation edge case
+- 2026-01-25T09:11:23: docs: benchmark inference latency and memory footprints
