@@ -51,3 +51,4 @@
 - 2026-01-24T19:49:25: fix: context window tokenizer truncation edge case
 - 2026-01-25T09:11:23: docs: benchmark inference latency and memory footprints
 - 2026-01-25T13:39:15: refactor: async prompt evaluation pipeline
+- 2026-01-25T17:07:07: fix: context window tokenizer truncation edge case
