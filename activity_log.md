@@ -54,3 +54,4 @@
 - 2026-01-25T17:07:07: fix: context window tokenizer truncation edge case
 - 2026-01-25T21:35:59: feat: support 4-bit and 8-bit quantized weights
 - 2026-01-28T10:48:06: refactor: Ollama GGUF model loader parameters
+- 2026-01-28T14:16:58: fix: context window tokenizer truncation edge case
