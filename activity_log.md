@@ -60,3 +60,4 @@
 - 2026-01-31T10:25:49: docs: benchmark inference latency and memory footprints
 - 2026-01-31T13:53:41: chore: update neural network layer abstractions
 - 2026-01-31T16:21:33: refactor: Ollama GGUF model loader parameters
+- 2026-01-31T19:49:25: fix: context window tokenizer truncation edge case
