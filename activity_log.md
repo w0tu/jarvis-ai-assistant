@@ -57,3 +57,4 @@
 - 2026-01-28T14:16:58: fix: context window tokenizer truncation edge case
 - 2026-01-28T18:44:50: fix: context window tokenizer truncation edge case
 - 2026-01-29T09:11:23: fix: context window tokenizer truncation edge case
+- 2026-01-31T10:25:49: docs: benchmark inference latency and memory footprints
