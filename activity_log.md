@@ -63,3 +63,4 @@
 - 2026-01-31T19:49:25: fix: context window tokenizer truncation edge case
 - 2026-02-01T09:48:06: feat: add autonomous tool execution loop
 - 2026-02-01T11:16:58: perf: memory-mapped model weights streaming
+- 2026-02-01T14:44:50: docs: benchmark inference latency and memory footprints
