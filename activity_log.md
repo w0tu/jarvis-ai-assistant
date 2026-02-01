@@ -62,3 +62,4 @@
 - 2026-01-31T16:21:33: refactor: Ollama GGUF model loader parameters
 - 2026-01-31T19:49:25: fix: context window tokenizer truncation edge case
 - 2026-02-01T09:48:06: feat: add autonomous tool execution loop
+- 2026-02-01T11:16:58: perf: memory-mapped model weights streaming
