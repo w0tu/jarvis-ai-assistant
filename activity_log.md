@@ -69,3 +69,4 @@
 - 2026-02-01T20:08:26: refactor: Ollama GGUF model loader parameters
 - 2026-02-04T09:11:23: feat: add temperature and top-p sampling heuristics
 - 2026-02-04T12:39:15: chore: update neural network layer abstractions
+- 2026-02-04T15:07:07: perf: accelerate matrix vector multiplication on CPU
