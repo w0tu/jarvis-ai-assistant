@@ -74,3 +74,4 @@
 - 2026-02-04T21:03:51: feat: add autonomous tool execution loop
 - 2026-02-07T11:25:49: refactor: async prompt evaluation pipeline
 - 2026-02-07T15:53:41: refactor: async prompt evaluation pipeline
+- 2026-02-07T19:21:33: feat: add autonomous tool execution loop
