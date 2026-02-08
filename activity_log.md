@@ -79,3 +79,4 @@
 - 2026-02-08T12:16:58: refactor: async prompt evaluation pipeline
 - 2026-02-08T15:44:50: refactor: async prompt evaluation pipeline
 - 2026-02-08T18:12:42: feat: add autonomous tool execution loop
+- 2026-02-08T21:40:34: fix: context window tokenizer truncation edge case
