@@ -85,3 +85,4 @@
 - 2026-02-11T14:44:50: perf: accelerate matrix vector multiplication on CPU
 - 2026-02-11T17:12:42: fix: token streaming buffer overflow in local runtime
 - 2026-02-11T19:40:34: feat: add autonomous tool execution loop
+- 2026-02-12T09:11:23: chore: update neural network layer abstractions
