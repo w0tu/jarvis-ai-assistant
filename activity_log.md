@@ -90,3 +90,4 @@
 - 2026-02-12T13:07:07: refactor: Ollama GGUF model loader parameters
 - 2026-02-12T16:35:59: perf: memory-mapped model weights streaming
 - 2026-02-12T18:03:51: refactor: Ollama GGUF model loader parameters
+- 2026-02-12T20:31:43: feat: optimize quantized attention kernel
