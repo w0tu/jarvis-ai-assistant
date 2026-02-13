@@ -92,3 +92,4 @@
 - 2026-02-12T18:03:51: refactor: Ollama GGUF model loader parameters
 - 2026-02-12T20:31:43: feat: optimize quantized attention kernel
 - 2026-02-13T10:25:49: feat: add autonomous tool execution loop
+- 2026-02-13T14:53:41: docs: benchmark inference latency and memory footprints
