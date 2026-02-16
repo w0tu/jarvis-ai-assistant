@@ -98,3 +98,4 @@
 - 2026-02-14T12:39:15: feat: add temperature and top-p sampling heuristics
 - 2026-02-14T15:07:07: feat: add autonomous tool execution loop
 - 2026-02-14T19:35:59: docs: benchmark inference latency and memory footprints
+- 2026-02-16T09:11:23: feat: support 4-bit and 8-bit quantized weights
