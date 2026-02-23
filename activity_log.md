@@ -102,3 +102,4 @@
 - 2026-02-21T09:11:23: refactor: async prompt evaluation pipeline
 - 2026-02-23T11:25:49: docs: benchmark inference latency and memory footprints
 - 2026-02-23T15:53:41: feat: add autonomous tool execution loop
+- 2026-02-23T19:21:33: feat: add temperature and top-p sampling heuristics
