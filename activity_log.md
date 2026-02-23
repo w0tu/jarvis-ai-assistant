@@ -101,3 +101,4 @@
 - 2026-02-16T09:11:23: feat: support 4-bit and 8-bit quantized weights
 - 2026-02-21T09:11:23: refactor: async prompt evaluation pipeline
 - 2026-02-23T11:25:49: docs: benchmark inference latency and memory footprints
+- 2026-02-23T15:53:41: feat: add autonomous tool execution loop
