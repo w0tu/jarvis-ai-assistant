@@ -105,3 +105,4 @@
 - 2026-02-23T19:21:33: feat: add temperature and top-p sampling heuristics
 - 2026-02-24T10:48:06: feat: add temperature and top-p sampling heuristics
 - 2026-02-24T14:16:58: refactor: async prompt evaluation pipeline
+- 2026-02-24T18:44:50: refactor: Ollama GGUF model loader parameters
