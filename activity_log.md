@@ -110,3 +110,4 @@
 - 2026-02-25T11:39:15: refactor: async prompt evaluation pipeline
 - 2026-02-25T14:07:07: refactor: async prompt evaluation pipeline
 - 2026-02-25T17:35:59: chore: update neural network layer abstractions
+- 2026-02-25T19:03:51: feat: add temperature and top-p sampling heuristics
