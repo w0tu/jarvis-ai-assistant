@@ -114,3 +114,4 @@
 - 2026-02-26T09:48:06: feat: optimize quantized attention kernel
 - 2026-02-26T12:16:58: fix: context window tokenizer truncation edge case
 - 2026-02-26T14:44:50: docs: benchmark inference latency and memory footprints
+- 2026-02-26T17:12:42: fix: context window tokenizer truncation edge case
