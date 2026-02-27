@@ -116,3 +116,4 @@
 - 2026-02-26T14:44:50: docs: benchmark inference latency and memory footprints
 - 2026-02-26T17:12:42: fix: context window tokenizer truncation edge case
 - 2026-02-26T19:40:34: feat: support 4-bit and 8-bit quantized weights
+- 2026-02-27T09:11:23: feat: add temperature and top-p sampling heuristics
