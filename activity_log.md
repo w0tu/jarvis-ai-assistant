@@ -118,3 +118,4 @@
 - 2026-02-26T19:40:34: feat: support 4-bit and 8-bit quantized weights
 - 2026-02-27T09:11:23: feat: add temperature and top-p sampling heuristics
 - 2026-02-27T12:39:15: feat: add temperature and top-p sampling heuristics
+- 2026-02-27T16:07:07: feat: add autonomous tool execution loop
