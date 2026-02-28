@@ -121,3 +121,4 @@
 - 2026-02-27T16:07:07: feat: add autonomous tool execution loop
 - 2026-02-27T20:35:59: chore: update neural network layer abstractions
 - 2026-02-28T10:25:49: perf: accelerate matrix vector multiplication on CPU
+- 2026-02-28T13:53:41: fix: context window tokenizer truncation edge case
