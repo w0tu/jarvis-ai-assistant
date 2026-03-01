@@ -128,3 +128,4 @@
 - 2026-03-01T11:02:32: chore: update neural network layer abstractions
 - 2026-03-01T14:30:24: perf: memory-mapped model weights streaming
 - 2026-03-01T17:58:16: perf: accelerate matrix vector multiplication on CPU
+- 2026-03-01T20:26:08: fix: context window tokenizer truncation edge case
