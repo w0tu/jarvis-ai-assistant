@@ -126,3 +126,4 @@
 - 2026-02-28T18:49:25: perf: memory-mapped model weights streaming
 - 2026-02-28T21:17:17: fix: token streaming buffer overflow in local runtime
 - 2026-03-01T11:02:32: chore: update neural network layer abstractions
+- 2026-03-01T14:30:24: perf: memory-mapped model weights streaming
