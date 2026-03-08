@@ -137,3 +137,4 @@
 - 2026-03-08T09:48:06: perf: accelerate matrix vector multiplication on CPU
 - 2026-03-08T12:16:58: feat: optimize quantized attention kernel
 - 2026-03-08T15:44:50: feat: optimize quantized attention kernel
+- 2026-03-08T17:12:42: perf: accelerate matrix vector multiplication on CPU
