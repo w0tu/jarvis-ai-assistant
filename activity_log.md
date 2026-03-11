@@ -141,3 +141,4 @@
 - 2026-03-08T20:40:34: refactor: async prompt evaluation pipeline
 - 2026-03-11T10:48:06: feat: support 4-bit and 8-bit quantized weights
 - 2026-03-11T14:16:58: perf: accelerate matrix vector multiplication on CPU
+- 2026-03-11T19:44:50: docs: benchmark inference latency and memory footprints
