@@ -156,3 +156,4 @@
 - 2026-03-19T09:48:06: feat: add autonomous tool execution loop
 - 2026-03-19T13:16:58: fix: token streaming buffer overflow in local runtime
 - 2026-03-19T16:44:50: feat: add autonomous tool execution loop
+- 2026-03-19T20:12:42: fix: token streaming buffer overflow in local runtime
