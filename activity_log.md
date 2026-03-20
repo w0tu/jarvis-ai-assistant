@@ -159,3 +159,4 @@
 - 2026-03-19T20:12:42: fix: token streaming buffer overflow in local runtime
 - 2026-03-20T11:25:49: feat: optimize quantized attention kernel
 - 2026-03-20T16:53:41: fix: token streaming buffer overflow in local runtime
+- 2026-03-20T20:21:33: fix: token streaming buffer overflow in local runtime
