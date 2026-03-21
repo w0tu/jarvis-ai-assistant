@@ -163,3 +163,4 @@
 - 2026-03-21T10:02:32: docs: benchmark inference latency and memory footprints
 - 2026-03-21T13:30:24: refactor: async prompt evaluation pipeline
 - 2026-03-21T15:58:16: feat: add autonomous tool execution loop
+- 2026-03-21T17:26:08: perf: memory-mapped model weights streaming
