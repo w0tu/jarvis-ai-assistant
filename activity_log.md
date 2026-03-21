@@ -164,3 +164,4 @@
 - 2026-03-21T13:30:24: refactor: async prompt evaluation pipeline
 - 2026-03-21T15:58:16: feat: add autonomous tool execution loop
 - 2026-03-21T17:26:08: perf: memory-mapped model weights streaming
+- 2026-03-21T20:54:00: perf: memory-mapped model weights streaming
