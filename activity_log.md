@@ -169,3 +169,4 @@
 - 2026-03-29T09:11:23: refactor: Ollama GGUF model loader parameters
 - 2026-03-30T10:02:32: feat: support 4-bit and 8-bit quantized weights
 - 2026-03-30T13:30:24: perf: memory-mapped model weights streaming
+- 2026-03-30T15:58:16: feat: support 4-bit and 8-bit quantized weights
