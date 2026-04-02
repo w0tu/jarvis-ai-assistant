@@ -185,3 +185,4 @@
 - 2026-04-02T12:53:41: refactor: Ollama GGUF model loader parameters
 - 2026-04-02T15:21:33: feat: add temperature and top-p sampling heuristics
 - 2026-04-02T17:49:25: perf: memory-mapped model weights streaming
+- 2026-04-02T20:17:17: feat: optimize quantized attention kernel
