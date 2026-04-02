@@ -182,3 +182,4 @@
 - 2026-04-01T16:30:24: feat: add temperature and top-p sampling heuristics
 - 2026-04-01T20:58:16: docs: benchmark inference latency and memory footprints
 - 2026-04-02T10:25:49: perf: accelerate matrix vector multiplication on CPU
+- 2026-04-02T12:53:41: refactor: Ollama GGUF model loader parameters
