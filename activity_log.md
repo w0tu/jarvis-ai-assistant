@@ -186,3 +186,4 @@
 - 2026-04-02T15:21:33: feat: add temperature and top-p sampling heuristics
 - 2026-04-02T17:49:25: perf: memory-mapped model weights streaming
 - 2026-04-02T20:17:17: feat: optimize quantized attention kernel
+- 2026-04-03T09:48:06: refactor: async prompt evaluation pipeline
