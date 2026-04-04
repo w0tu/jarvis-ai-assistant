@@ -192,3 +192,4 @@
 - 2026-04-03T16:12:42: chore: update neural network layer abstractions
 - 2026-04-03T18:40:34: perf: memory-mapped model weights streaming
 - 2026-04-03T20:08:26: perf: accelerate matrix vector multiplication on CPU
+- 2026-04-04T10:25:49: fix: token streaming buffer overflow in local runtime
