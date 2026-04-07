@@ -200,3 +200,4 @@
 - 2026-04-05T14:30:24: perf: memory-mapped model weights streaming
 - 2026-04-05T16:58:16: feat: add autonomous tool execution loop
 - 2026-04-05T19:26:08: feat: optimize quantized attention kernel
+- 2026-04-07T09:11:23: fix: context window tokenizer truncation edge case
