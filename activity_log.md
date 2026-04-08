@@ -203,3 +203,4 @@
 - 2026-04-07T09:11:23: fix: context window tokenizer truncation edge case
 - 2026-04-08T10:02:32: feat: add temperature and top-p sampling heuristics
 - 2026-04-08T13:30:24: chore: update neural network layer abstractions
+- 2026-04-08T15:58:16: docs: benchmark inference latency and memory footprints
