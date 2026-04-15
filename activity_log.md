@@ -210,3 +210,4 @@
 - 2026-04-12T12:02:32: chore: update neural network layer abstractions
 - 2026-04-12T16:30:24: refactor: Ollama GGUF model loader parameters
 - 2026-04-12T20:58:16: perf: memory-mapped model weights streaming
+- 2026-04-15T09:48:06: feat: support 4-bit and 8-bit quantized weights
