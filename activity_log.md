@@ -216,3 +216,4 @@
 - 2026-04-15T21:12:42: feat: add autonomous tool execution loop
 - 2026-04-20T09:11:23: refactor: async prompt evaluation pipeline
 - 2026-04-20T13:39:15: docs: benchmark inference latency and memory footprints
+- 2026-04-20T18:07:07: fix: token streaming buffer overflow in local runtime
