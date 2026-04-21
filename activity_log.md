@@ -218,3 +218,4 @@
 - 2026-04-20T13:39:15: docs: benchmark inference latency and memory footprints
 - 2026-04-20T18:07:07: fix: token streaming buffer overflow in local runtime
 - 2026-04-21T10:48:06: chore: update neural network layer abstractions
+- 2026-04-21T14:16:58: fix: token streaming buffer overflow in local runtime
