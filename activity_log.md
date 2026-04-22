@@ -224,3 +224,4 @@
 - 2026-04-22T12:53:41: feat: add temperature and top-p sampling heuristics
 - 2026-04-22T15:21:33: feat: add temperature and top-p sampling heuristics
 - 2026-04-22T17:49:25: perf: memory-mapped model weights streaming
+- 2026-04-22T20:17:17: docs: benchmark inference latency and memory footprints
