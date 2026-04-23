@@ -230,3 +230,4 @@
 - 2026-04-23T14:44:50: feat: add temperature and top-p sampling heuristics
 - 2026-04-23T16:12:42: perf: accelerate matrix vector multiplication on CPU
 - 2026-04-23T18:40:34: refactor: Ollama GGUF model loader parameters
+- 2026-04-23T20:08:26: fix: context window tokenizer truncation edge case
