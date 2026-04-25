@@ -234,3 +234,4 @@
 - 2026-04-24T10:25:49: feat: optimize quantized attention kernel
 - 2026-04-24T14:53:41: perf: memory-mapped model weights streaming
 - 2026-04-24T18:21:33: docs: benchmark inference latency and memory footprints
+- 2026-04-25T09:11:23: feat: add temperature and top-p sampling heuristics
