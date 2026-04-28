@@ -239,3 +239,4 @@
 - 2026-04-25T14:07:07: feat: add temperature and top-p sampling heuristics
 - 2026-04-25T17:35:59: chore: update neural network layer abstractions
 - 2026-04-25T19:03:51: refactor: Ollama GGUF model loader parameters
+- 2026-04-28T09:11:23: feat: optimize quantized attention kernel
