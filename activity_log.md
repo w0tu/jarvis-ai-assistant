@@ -241,3 +241,4 @@
 - 2026-04-25T19:03:51: refactor: Ollama GGUF model loader parameters
 - 2026-04-28T09:11:23: feat: optimize quantized attention kernel
 - 2026-05-02T09:11:23: refactor: async prompt evaluation pipeline
+- 2026-05-03T12:02:32: feat: add temperature and top-p sampling heuristics
