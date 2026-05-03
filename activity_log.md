@@ -242,3 +242,4 @@
 - 2026-04-28T09:11:23: feat: optimize quantized attention kernel
 - 2026-05-02T09:11:23: refactor: async prompt evaluation pipeline
 - 2026-05-03T12:02:32: feat: add temperature and top-p sampling heuristics
+- 2026-05-03T17:30:24: chore: update neural network layer abstractions
