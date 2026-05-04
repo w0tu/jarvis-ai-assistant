@@ -246,3 +246,4 @@
 - 2026-05-04T09:11:23: refactor: async prompt evaluation pipeline
 - 2026-05-04T11:39:15: perf: memory-mapped model weights streaming
 - 2026-05-04T14:07:07: perf: accelerate matrix vector multiplication on CPU
+- 2026-05-04T17:35:59: fix: token streaming buffer overflow in local runtime
