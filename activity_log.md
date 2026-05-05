@@ -251,3 +251,4 @@
 - 2026-05-05T10:25:49: feat: support 4-bit and 8-bit quantized weights
 - 2026-05-05T12:53:41: fix: token streaming buffer overflow in local runtime
 - 2026-05-05T14:21:33: feat: add autonomous tool execution loop
+- 2026-05-05T17:49:25: docs: benchmark inference latency and memory footprints
