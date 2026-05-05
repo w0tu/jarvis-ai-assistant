@@ -252,3 +252,4 @@
 - 2026-05-05T12:53:41: fix: token streaming buffer overflow in local runtime
 - 2026-05-05T14:21:33: feat: add autonomous tool execution loop
 - 2026-05-05T17:49:25: docs: benchmark inference latency and memory footprints
+- 2026-05-05T19:17:17: feat: add autonomous tool execution loop
