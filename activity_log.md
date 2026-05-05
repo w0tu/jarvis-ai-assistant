@@ -250,3 +250,4 @@
 - 2026-05-04T20:03:51: refactor: async prompt evaluation pipeline
 - 2026-05-05T10:25:49: feat: support 4-bit and 8-bit quantized weights
 - 2026-05-05T12:53:41: fix: token streaming buffer overflow in local runtime
+- 2026-05-05T14:21:33: feat: add autonomous tool execution loop
