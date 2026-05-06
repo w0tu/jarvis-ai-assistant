@@ -257,3 +257,4 @@
 - 2026-05-06T11:39:15: feat: add temperature and top-p sampling heuristics
 - 2026-05-06T13:07:07: refactor: Ollama GGUF model loader parameters
 - 2026-05-06T15:35:59: docs: benchmark inference latency and memory footprints
+- 2026-05-06T17:03:51: feat: add autonomous tool execution loop
