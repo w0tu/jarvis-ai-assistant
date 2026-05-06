@@ -255,3 +255,4 @@
 - 2026-05-05T19:17:17: feat: add autonomous tool execution loop
 - 2026-05-06T09:11:23: perf: memory-mapped model weights streaming
 - 2026-05-06T11:39:15: feat: add temperature and top-p sampling heuristics
+- 2026-05-06T13:07:07: refactor: Ollama GGUF model loader parameters
