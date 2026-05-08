@@ -262,3 +262,4 @@
 - 2026-05-07T09:11:23: feat: optimize quantized attention kernel
 - 2026-05-07T13:39:15: feat: add autonomous tool execution loop
 - 2026-05-07T18:07:07: docs: benchmark inference latency and memory footprints
+- 2026-05-08T09:48:06: fix: token streaming buffer overflow in local runtime
