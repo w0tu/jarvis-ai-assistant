@@ -268,3 +268,4 @@
 - 2026-05-08T17:12:42: perf: accelerate matrix vector multiplication on CPU
 - 2026-05-08T20:40:34: feat: optimize quantized attention kernel
 - 2026-05-09T10:25:49: feat: support 4-bit and 8-bit quantized weights
+- 2026-05-09T13:53:41: docs: benchmark inference latency and memory footprints
