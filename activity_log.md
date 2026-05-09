@@ -271,3 +271,4 @@
 - 2026-05-09T13:53:41: docs: benchmark inference latency and memory footprints
 - 2026-05-09T15:21:33: perf: accelerate matrix vector multiplication on CPU
 - 2026-05-09T18:49:25: refactor: async prompt evaluation pipeline
+- 2026-05-09T21:17:17: refactor: Ollama GGUF model loader parameters
