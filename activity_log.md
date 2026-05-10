@@ -274,3 +274,4 @@
 - 2026-05-09T21:17:17: refactor: Ollama GGUF model loader parameters
 - 2026-05-10T11:02:32: perf: memory-mapped model weights streaming
 - 2026-05-10T14:30:24: fix: context window tokenizer truncation edge case
+- 2026-05-10T16:58:16: fix: token streaming buffer overflow in local runtime
