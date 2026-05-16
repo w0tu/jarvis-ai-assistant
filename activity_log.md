@@ -279,3 +279,4 @@
 - 2026-05-12T09:11:23: perf: memory-mapped model weights streaming
 - 2026-05-16T09:11:23: feat: add autonomous tool execution loop
 - 2026-05-16T12:39:15: docs: benchmark inference latency and memory footprints
+- 2026-05-16T15:07:07: feat: add autonomous tool execution loop
