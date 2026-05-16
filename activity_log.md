@@ -281,3 +281,4 @@
 - 2026-05-16T12:39:15: docs: benchmark inference latency and memory footprints
 - 2026-05-16T15:07:07: feat: add autonomous tool execution loop
 - 2026-05-16T18:35:59: docs: benchmark inference latency and memory footprints
+- 2026-05-16T21:03:51: fix: context window tokenizer truncation edge case
