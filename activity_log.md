@@ -283,3 +283,4 @@
 - 2026-05-16T18:35:59: docs: benchmark inference latency and memory footprints
 - 2026-05-16T21:03:51: fix: context window tokenizer truncation edge case
 - 2026-05-17T10:02:32: perf: accelerate matrix vector multiplication on CPU
+- 2026-05-17T13:30:24: chore: update neural network layer abstractions
