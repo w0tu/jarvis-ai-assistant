@@ -287,3 +287,4 @@
 - 2026-05-17T15:58:16: feat: add autonomous tool execution loop
 - 2026-05-17T17:26:08: perf: accelerate matrix vector multiplication on CPU
 - 2026-05-17T20:54:00: refactor: Ollama GGUF model loader parameters
+- 2026-05-19T09:11:23: feat: support 4-bit and 8-bit quantized weights
