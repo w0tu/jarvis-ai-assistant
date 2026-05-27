@@ -305,3 +305,4 @@
 - 2026-05-26T20:45:09: refactor: Ollama GGUF model loader parameters
 - 2026-05-27T10:25:49: feat: add autonomous tool execution loop
 - 2026-05-27T13:53:41: refactor: async prompt evaluation pipeline
+- 2026-05-27T16:21:33: docs: benchmark inference latency and memory footprints
