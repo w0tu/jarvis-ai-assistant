@@ -303,3 +303,4 @@
 - 2026-05-26T16:49:25: perf: memory-mapped model weights streaming
 - 2026-05-26T18:17:17: fix: token streaming buffer overflow in local runtime
 - 2026-05-26T20:45:09: refactor: Ollama GGUF model loader parameters
+- 2026-05-27T10:25:49: feat: add autonomous tool execution loop
