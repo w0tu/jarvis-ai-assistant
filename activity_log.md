@@ -308,3 +308,4 @@
 - 2026-05-27T16:21:33: docs: benchmark inference latency and memory footprints
 - 2026-05-27T19:49:25: feat: support 4-bit and 8-bit quantized weights
 - 2026-05-28T09:48:06: fix: token streaming buffer overflow in local runtime
+- 2026-05-28T13:16:58: docs: benchmark inference latency and memory footprints
