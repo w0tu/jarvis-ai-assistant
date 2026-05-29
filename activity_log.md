@@ -313,3 +313,4 @@
 - 2026-05-28T20:12:42: feat: add temperature and top-p sampling heuristics
 - 2026-05-29T10:25:49: feat: add autonomous tool execution loop
 - 2026-05-29T12:53:41: feat: add autonomous tool execution loop
+- 2026-05-29T14:21:33: refactor: Ollama GGUF model loader parameters
