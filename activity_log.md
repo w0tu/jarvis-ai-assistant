@@ -311,3 +311,4 @@
 - 2026-05-28T13:16:58: docs: benchmark inference latency and memory footprints
 - 2026-05-28T16:44:50: perf: accelerate matrix vector multiplication on CPU
 - 2026-05-28T20:12:42: feat: add temperature and top-p sampling heuristics
+- 2026-05-29T10:25:49: feat: add autonomous tool execution loop
