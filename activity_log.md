@@ -324,3 +324,4 @@
 - 2026-06-22T09:11:23: fix: token streaming buffer overflow in local runtime
 - 2026-06-26T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2026-06-30T09:11:23: perf: accelerate matrix vector multiplication on CPU
+- 2026-07-08T09:11:23: chore: update neural network layer abstractions
