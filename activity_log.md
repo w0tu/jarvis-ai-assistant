@@ -325,3 +325,4 @@
 - 2026-06-26T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2026-06-30T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2026-07-08T09:11:23: chore: update neural network layer abstractions
+- 2026-07-12T09:11:23: perf: accelerate matrix vector multiplication on CPU
