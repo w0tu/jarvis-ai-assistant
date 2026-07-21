@@ -327,3 +327,4 @@
 - 2026-07-08T09:11:23: chore: update neural network layer abstractions
 - 2026-07-12T09:11:23: perf: accelerate matrix vector multiplication on CPU
 - 2026-07-17T09:11:23: chore: update neural network layer abstractions
+- 2026-07-21T09:11:23: feat: optimize quantized attention kernel
