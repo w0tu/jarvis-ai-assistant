@@ -333,3 +333,4 @@
 - 2026-08-04T09:11:23: chore: update neural network layer abstractions
 - 2026-08-09T09:11:23: feat: add temperature and top-p sampling heuristics
 - 2026-08-13T09:11:23: fix: context window tokenizer truncation edge case
+- 2026-08-17T09:11:23: perf: memory-mapped model weights streaming
