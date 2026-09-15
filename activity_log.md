@@ -339,3 +339,4 @@
 - 2026-09-01T09:11:23: refactor: Ollama GGUF model loader parameters
 - 2026-09-06T09:11:23: feat: add temperature and top-p sampling heuristics
 - 2026-09-11T09:11:23: feat: add temperature and top-p sampling heuristics
+- 2026-09-15T09:11:23: fix: token streaming buffer overflow in local runtime
