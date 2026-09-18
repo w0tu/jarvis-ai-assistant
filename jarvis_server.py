@@ -595,6 +595,7 @@ INDEX_HTML = """<!DOCTYPE html>
   </div>
 
   <audio id="tts-player" style="display:none;"></audio>
+  <input type="file" id="native-audio-input" accept="audio/*" capture="microphone" style="display:none;">
 
   <script>
     const chatBox = document.getElementById('chat');
@@ -707,7 +708,13 @@ INDEX_HTML = """<!DOCTYPE html>
       } catch (e) {}
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Microphone access is not supported on this browser/connection.');
+        const nativeInput = document.getElementById('native-audio-input');
+        if (nativeInput) {
+          wakeText.textContent = '🎙️ Opening mobile voice recorder...';
+          nativeInput.click();
+          return;
+        }
+        alert('Microphone access is restricted on insecure HTTP. Please tap the banner above to switch to HTTPS on port 8766.');
         return;
       }
 
@@ -848,6 +855,29 @@ INDEX_HTML = """<!DOCTYPE html>
       } catch (err) {
         appendMessage('J.A.R.V.I.S.', 'Voice processing error: ' + err, true);
         wakeText.textContent = 'Error processing voice. Tap mic to retry.';
+      }
+    }
+
+    // ── Native Audio Input Fallback (for Insecure Context HTTP on phones) ──
+    const nativeInput = document.getElementById('native-audio-input');
+    if (nativeInput) {
+      nativeInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          wakeText.textContent = '⚡ Transcribing & executing with J.A.R.V.I.S....';
+          await uploadAndProcessVoice(file);
+          nativeInput.value = '';
+        }
+      });
+    }
+
+    // ── Mobile Insecure Context Detection ──────────────────────────────
+    if (!window.isSecureContext && window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const banner = document.getElementById('https-banner');
+      const link = document.getElementById('https-link');
+      if (banner && link) {
+        link.href = `https://${window.location.hostname}:8766`;
+        banner.style.display = 'block';
       }
     }
 
@@ -1186,24 +1216,41 @@ def api_qr():
 def render_terminal_qr():
     """Print ASCII QR Code directly in terminal."""
     lan_ip = get_lan_ip()
-    url = f"http://{lan_ip}:{PORT}"
+    http_url = f"http://{lan_ip}:{PORT}"
+    https_url = f"https://{lan_ip}:8766"
+
     qr = qrcode.QRCode(box_size=1, border=1)
-    qr.add_data(url)
+    qr.add_data(https_url)
     qr.make(fit=True)
 
     print("\n" + "═" * 58)
     print("✦ J.A.R.V.I.S. LOCAL NETWORK HUB — SCAN TO CONNECT")
     print("═" * 58)
-    print(f"URL: \033[1;36m{url}\033[0m\n")
+    print(f"HTTP:  \033[1;36m{http_url}\033[0m")
+    print(f"HTTPS: \033[1;32m{https_url}\033[0m (Secure Context for Phone Microphone)\n")
     qr.print_ascii(invert=True)
     print("═" * 58)
-    print("Open this URL on your phone or any device on Wi-Fi.")
-    print("Continuous voice listening ('Hey Jarvis') will be active.\n")
+    print("Open either URL on your phone or tablet on the same Wi-Fi.")
+    print("HTTPS (port 8766) unlocks native phone microphone support.\n")
 
 
 def main():
     lan_ip = get_lan_ip()
     render_terminal_qr()
+
+    ssl_cert = Path.home() / ".jarvis" / "ssl" / "cert.pem"
+    ssl_key = Path.home() / ".jarvis" / "ssl" / "key.pem"
+    if ssl_cert.exists() and ssl_key.exists():
+        def run_https():
+            try:
+                print(f"✦ Secure Context HTTPS Hub listening on https://0.0.0.0:8766\n")
+                app.run(host="0.0.0.0", port=8766, debug=False, threaded=True, ssl_context=(str(ssl_cert), str(ssl_key)))
+            except Exception as e:
+                print(f"HTTPS Hub error: {e}")
+
+        t = threading.Thread(target=run_https, daemon=True)
+        t.start()
+
     app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True)
 
 
