@@ -525,8 +525,12 @@ INDEX_HTML = """<!DOCTYPE html>
       .actions-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
-</head>
 <body>
+
+  <!-- Mobile Secure Context Banner -->
+  <div id="https-banner" style="display:none; background: #1a1200; border-bottom: 1px solid #d97706; color: #fbbf24; font-size: 0.76rem; padding: 10px 14px; text-align: center;">
+    🔒 Phone browsers require HTTPS for inline microphone. <a id="https-link" href="#" style="color: #00ffcc; font-weight: bold; text-decoration: underline; margin-left: 6px;">Tap to open HTTPS (port 8766)</a>
+  </div>
 
   <header>
     <div class="brand">
