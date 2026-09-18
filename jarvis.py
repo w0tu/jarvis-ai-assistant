@@ -146,7 +146,7 @@ def tts_worker():
         # 1. Primary: Neural Edge-TTS (British Ryan)
         try:
             async def run_synth():
-                comm = edge_tts.Communicate(spoken_summary, voice=VOICE_NAME, rate="+5%")
+                comm = edge_tts.Communicate(spoken_summary, voice=VOICE_NAME, rate="+20%")
                 await comm.save(audio_path)
 
             asyncio.run(run_synth())
@@ -228,6 +228,12 @@ def render_hud_header(model: str = DEFAULT_MODEL) -> Panel:
     )
 
 
+HTTP_CLIENT = httpx.Client(
+    timeout=httpx.Timeout(10.0, connect=3.0),
+    limits=httpx.Limits(max_keepalive_connections=20, max_connections=50)
+)
+
+
 # ── LLM Inference Engine ────────────────────────────────────────────────────
 class JarvisEngine:
     """Handles Groq API queries with local Ollama fallback."""
@@ -252,14 +258,55 @@ class JarvisEngine:
             "Never use conversational filler or apologize profusely. Start directly with the answer."
         )
 
-    def chat(self, user_text: str) -> str:
-        """Query Groq with automatic local Ollama failover."""
+    def chat_stream(self, user_text: str):
+        """Stream reply tokens from Groq API with ultra-low latency (<200ms TTFT)."""
         messages = [{"role": "system", "content": self.get_system_prompt()}]
-        # Add recent conversation memory (last 6 turns)
         messages.extend(self.history[-6:])
         messages.append({"role": "user", "content": user_text})
 
-        # 1. Primary: Groq API
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": 750,
+            "temperature": 0.3,
+            "stream": True,
+        }
+
+        full_reply = ""
+        try:
+            with HTTP_CLIENT.stream("POST", GROQ_URL, headers=headers, json=payload) as response:
+                if response.status_code == 200:
+                    for line in response.iter_lines():
+                        if line.startswith("data: ") and line != "data: [DONE]":
+                            try:
+                                chunk = json.loads(line[6:])
+                                delta = chunk["choices"][0]["delta"].get("content", "")
+                                if delta:
+                                    full_reply += delta
+                                    yield delta
+                            except Exception:
+                                pass
+                    if full_reply.strip():
+                        self.history.append({"role": "user", "content": user_text})
+                        self.history.append({"role": "assistant", "content": full_reply.strip()})
+                        return
+        except Exception:
+            pass
+
+        # Fallback if streaming failed:
+        reply = self.chat(user_text)
+        yield reply
+
+    def chat(self, user_text: str) -> str:
+        """Query Groq with automatic local Ollama failover."""
+        messages = [{"role": "system", "content": self.get_system_prompt()}]
+        messages.extend(self.history[-6:])
+        messages.append({"role": "user", "content": user_text})
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -272,13 +319,12 @@ class JarvisEngine:
         }
 
         try:
-            with httpx.Client(timeout=15.0) as client:
-                res = client.post(GROQ_URL, headers=headers, json=payload)
-                if res.status_code == 200:
-                    reply = res.json()["choices"][0]["message"]["content"].strip()
-                    self.history.append({"role": "user", "content": user_text})
-                    self.history.append({"role": "assistant", "content": reply})
-                    return reply
+            res = HTTP_CLIENT.post(GROQ_URL, headers=headers, json=payload)
+            if res.status_code == 200:
+                reply = res.json()["choices"][0]["message"]["content"].strip()
+                self.history.append({"role": "user", "content": user_text})
+                self.history.append({"role": "assistant", "content": reply})
+                return reply
         except Exception:
             pass
 
@@ -329,6 +375,10 @@ def main():
                 render_terminal_qr()
                 subprocess.run(["systemctl", "--user", "status", "jarvis-server.service"])
             return
+        elif arg in ("talk", "--talk", "voice", "--voice"):
+            import jarvis_voice
+            jarvis_voice.main()
+            return
         elif arg in ("listen", "--listen"):
             import jarvis_listener
             jarvis_listener.listen_loop()
@@ -336,7 +386,7 @@ def main():
 
     engine = JarvisEngine()
     completer = WordCompleter([
-        "/sys", "/ports", "/clean", "/sync", "/voice", "/mute", "/unmute",
+        "/talk", "/voice-mode", "/sys", "/ports", "/clean", "/sync", "/voice", "/mute", "/unmute",
         "/vibe", "/clear", "/help", "/exit", "/model", "/qr", "/server", "/listen"
     ], ignore_case=True)
 
@@ -380,9 +430,19 @@ def main():
             time.sleep(1)
             break
 
+        if cmd in ("/talk", "/voice-mode", "/v"):
+            console.print("[bold cyan]✦ Entering Real-Time Voice Conversation Mode...[/]\n")
+            import jarvis_voice
+            jarvis_voice.main()
+            console.clear()
+            console.print(render_hud_header(engine.model))
+            console.print()
+            continue
+
         if cmd == "/help":
             console.print(Panel(
                 "[bold white]✦ J.A.R.V.I.S. Command Reference[/]\n\n"
+                "[bold cyan]/talk[/]      - Enter Real-Time Continuous Voice Conversation Mode\n"
                 "[bold cyan]/sys[/]       - Comprehensive system diagnostics & hardware telemetry\n"
                 "[bold cyan]/ports[/]     - Display active listening network ports & PIDs\n"
                 "[bold cyan]/clean[/]     - Run Turbo-Clean to flush memory caches\n"
@@ -509,20 +569,36 @@ def main():
             continue
 
         # Inference Turn
-        with console.status("[bold #888888]Processing tactical query...[/]", spinner="dots"):
-            reply = engine.chat(user_input)
+        console.print(f"[bold white]J.A.R.V.I.S.:[/] ", end="")
+        full_reply = ""
+        first_sentence = ""
+        speech_queued = False
+
+        for delta in engine.chat_stream(user_input):
+            console.print(delta, end="")
+            full_reply += delta
+            if not speech_queued:
+                first_sentence += delta
+                if any(punct in delta for punct in [".", "!", "?", "\n"]) and len(first_sentence.split()) >= 3:
+                    queue_speech(first_sentence.strip())
+                    speech_queued = True
+
+        console.print("\n")
+
+        ping_file = Path(__file__).parent / "audio_cache" / "chime_ping.wav"
+        if ping_file.exists():
+            subprocess.Popen(["pw-play", str(ping_file)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if not speech_queued and full_reply.strip():
+            queue_speech(full_reply.strip())
 
         # Check for autonomous execution directive
-        if reply.startswith("EXEC:"):
-            exec_cmd = reply.split("EXEC:", 1)[1].strip().splitlines()[0]
+        if full_reply.startswith("EXEC:"):
+            exec_cmd = full_reply.split("EXEC:", 1)[1].strip().splitlines()[0]
             console.print(f"[bold cyan]✦ Autonomous Command:[/] [dim]{exec_cmd}[/]")
             res = execute_system_command(exec_cmd)
             console.print(Panel(res, title=f"RESULT: {exec_cmd}", border_style="dim"))
             queue_speech(f"Executed command {exec_cmd}, Sir.")
-        else:
-            console.print(f"[bold white]J.A.R.V.I.S.:[/]")
-            console.print(Markdown(reply))
-            queue_speech(reply)
 
         console.print()
 

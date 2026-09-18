@@ -37,6 +37,12 @@ OFFLINE_MODEL = "qwen2.5-coder:1.5b"
 VOICE_NAME = "en-GB-RyanNeural"
 PORT = 8765
 
+# Persistent HTTP Client with Connection Pooling for Ultra-Low Latency
+HTTP_CLIENT = httpx.Client(
+    timeout=httpx.Timeout(8.0, connect=3.0),
+    limits=httpx.Limits(max_keepalive_connections=20, max_connections=50)
+)
+
 
 def get_lan_ip() -> str:
     """Detect local LAN IP address."""
@@ -205,30 +211,29 @@ def ask_ai(prompt: str) -> tuple[str, str]:
 
     answer = ""
     try:
-        with httpx.Client(timeout=15.0) as client:
-            resp = client.post(GROQ_URL, headers=headers, json=payload)
-            if resp.status_code == 200:
-                answer = resp.json()["choices"][0]["message"]["content"]
+        resp = HTTP_CLIENT.post(GROQ_URL, headers=headers, json=payload)
+        if resp.status_code == 200:
+            answer = resp.json()["choices"][0]["message"]["content"]
     except Exception:
         pass
 
     # Fallback to local Ollama if Groq fails or offline
     if not answer:
         try:
-            with httpx.Client(timeout=30.0) as client:
-                resp = client.post(
-                    OFFLINE_URL,
-                    json={
-                        "model": OFFLINE_MODEL,
-                        "messages": [
-                            {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": prompt}
-                        ],
-                        "stream": False,
-                    }
-                )
-                if resp.status_code == 200:
-                    answer = resp.json()["message"]["content"]
+            resp = HTTP_CLIENT.post(
+                OFFLINE_URL,
+                json={
+                    "model": OFFLINE_MODEL,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "stream": False,
+                },
+                timeout=10.0
+            )
+            if resp.status_code == 200:
+                answer = resp.json()["message"]["content"]
         except Exception as e:
             answer = f"I am unable to reach the inference servers, Sir. Error: {e}"
 
@@ -850,21 +855,8 @@ def api_chat():
     if executed_notice:
         full_answer = executed_notice + full_answer
 
-    # Generate speech file
-    audio_filename = f"speech_{int(time.time()*1000)}.mp3"
-    audio_cache_dir = Path("/tmp/jarvis_audio")
-    audio_cache_dir.mkdir(parents=True, exist_ok=True)
-    audio_file_path = audio_cache_dir / audio_filename
-
-    async def synth():
-        comm = edge_tts.Communicate(spoken, voice=VOICE_NAME, rate="+5%")
-        await comm.save(str(audio_file_path))
-
-    try:
-        asyncio.run(synth())
-        audio_url = f"/api/audio/{audio_filename}"
-    except Exception:
-        audio_url = None
+    import urllib.parse
+    audio_url = f"/api/tts?text={urllib.parse.quote(spoken)}"
 
     return jsonify({
         "text": full_answer,
@@ -882,18 +874,33 @@ def api_audio(filename):
     return ("Audio file not found", 404)
 
 
+@app.route("/api/earcon/<name>", methods=["GET"])
+def api_earcon(name):
+    """Serve instant earcons (chime_ping, chime_listen)."""
+    p = Path.home() / ".jarvis" / "audio_cache" / f"{name}.wav"
+    if p.exists():
+        return send_file(str(p), mimetype="audio/wav")
+    return ("Earcon not found", 404)
+
+
 @app.route("/api/tts", methods=["GET"])
 def api_tts():
     """Synthesize any provided text into streaming MP3."""
-    text = request.args.get("text", "Greetings Sir.")
+    text = request.args.get("text", "Greetings Sir.").strip()
+
+    # Instant check for pre-cached audio
+    cache_dir = Path.home() / ".jarvis" / "audio_cache"
+    if "yes, sir" in text.lower() and (cache_dir / "ack_yes_sir.mp3").exists():
+        return send_file(str(cache_dir / "ack_yes_sir.mp3"), mimetype="audio/mpeg")
+
     audio_cache_dir = Path("/tmp/jarvis_audio")
     audio_cache_dir.mkdir(parents=True, exist_ok=True)
     filename = f"tts_{int(time.time()*1000)}.mp3"
     audio_file_path = audio_cache_dir / filename
 
     async def synth():
-        comm = edge_tts.Communicate(text, voice=VOICE_NAME, rate="+5%")
-        await comm.save(str(audio_file_path))
+        comm = edge_tts.Communicate(text, voice=VOICE_NAME, rate="+20%")
+        await asyncio.wait_for(comm.save(str(audio_file_path)), timeout=8.0)
 
     try:
         asyncio.run(synth())
