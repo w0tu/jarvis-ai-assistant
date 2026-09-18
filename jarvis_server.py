@@ -503,10 +503,15 @@ INDEX_HTML = """<!DOCTYPE html>
       transition: all 0.15s ease;
     }
     .btn-mic.active {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 12px var(--pulse-glow);
+      background: #2a0812;
+      border-color: #ff3366;
+      color: #ff3366;
+      box-shadow: 0 0 16px rgba(255, 51, 102, 0.7);
+      animation: micGlow 0.9s infinite alternate;
+    }
+    @keyframes micGlow {
+      from { transform: scale(1); box-shadow: 0 0 8px rgba(255, 51, 102, 0.4); }
+      to { transform: scale(1.08); box-shadow: 0 0 18px rgba(255, 51, 102, 0.9); }
     }
     .btn-send {
       background: #fff;
@@ -580,8 +585,8 @@ INDEX_HTML = """<!DOCTYPE html>
 
   <!-- Input Bar -->
   <div class="input-bar">
-    <button class="btn-icon btn-mic" id="mic-btn" onclick="toggleContinuousListening()" title="Toggle 'Hey Jarvis' Voice Recognition">🎙️</button>
-    <input type="text" id="query-input" placeholder="Type or say 'Hey Jarvis'..." autocomplete="off" onkeydown="if(event.key==='Enter') submitText()">
+    <button class="btn-icon btn-mic" id="mic-btn" onclick="toggleVoiceRecording()" title="Tap to Speak with J.A.R.V.I.S.">🎙️</button>
+    <input type="text" id="query-input" placeholder="Type or tap mic to speak..." autocomplete="off" onkeydown="if(event.key==='Enter') submitText()">
     <button class="btn-icon btn-send" onclick="submitText()">➤</button>
   </div>
 
@@ -673,85 +678,176 @@ INDEX_HTML = """<!DOCTYPE html>
       if (val) sendPrompt(val);
     }
 
-    // ── Continuous "Hey Jarvis" Voice Recognition (Web Speech API) ───────
-    let recognition = null;
-    let isListening = false;
-    let isExecuting = false;
+    // ── Direct Microphone Audio Recording & Speech Engine ──────────────
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let micStream = null;
+    let audioContext = null;
+    let analyserNode = null;
+    let isRecording = false;
+    let silenceTimer = null;
+    let speechActive = false;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => {
-        isListening = true;
-        micBtn.classList.add('active');
-        wakeDot.classList.add('listening');
-        wakeText.textContent = '✦ Listening: Say "Hey Jarvis <command>"';
-      };
-
-      recognition.onend = () => {
-        // Auto-restart continuous listening if still toggled active
-        if (isListening) {
-          try { recognition.start(); } catch (e) {}
-        } else {
-          micBtn.classList.remove('active');
-          wakeDot.classList.remove('listening');
-          wakeText.textContent = 'Voice Paused. Tap mic to listen.';
-        }
-      };
-
-      recognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        transcript = transcript.trim().toLowerCase();
-
-        // Check for Wake Word: "hey jarvis" or "jarvis"
-        const wakeWordRegex = /\\b(hey\\s+jarvis|jarvis)\\b/i;
-        if (wakeWordRegex.test(transcript) && !isExecuting) {
-          // Extract command after wake word
-          let cleanCmd = transcript.replace(/.*?\\b(hey\\s+jarvis|jarvis)[,:]?\\s*/i, '').trim();
-          if (cleanCmd.length > 2) {
-            isExecuting = true;
-            wakeText.textContent = `✦ Triggered: "${cleanCmd}"`;
-            sendPrompt(cleanCmd);
-            setTimeout(() => { isExecuting = false; }, 3000);
-          }
-        }
-      };
-
-      recognition.onerror = (e) => {
-        if (e.error !== 'no-speech') {
-          console.warn('Speech recognition notice:', e.error);
-        }
-      };
-    } else {
-      wakeText.textContent = 'Voice API not natively supported on this browser. Type below.';
+    async function toggleVoiceRecording() {
+      if (isRecording) {
+        stopVoiceRecording();
+      } else {
+        startVoiceRecording();
+      }
     }
 
-    function toggleContinuousListening() {
-      if (!recognition) {
-        alert('Web Speech API is not supported in this browser. Please use Chrome/Edge or Safari.');
+    async function startVoiceRecording() {
+      // Pre-unlock audio element for mobile browser autoplay
+      try {
+        ttsPlayer.play().then(() => ttsPlayer.pause()).catch(() => {});
+      } catch (e) {}
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Microphone access is not supported on this browser/connection.');
         return;
       }
-      if (isListening) {
-        isListening = false;
-        recognition.stop();
-      } else {
-        try {
-          recognition.start();
-        } catch (e) {
-          console.error(e);
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      } catch (err) {
+        console.error('Microphone error:', err);
+        wakeText.textContent = 'Mic permission denied. Please allow microphone.';
+        return;
+      }
+
+      // Real-time AudioContext Analyser for Live Canvas Waveform
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(micStream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 64;
+        source.connect(analyserNode);
+        visualizeLiveMic();
+      } catch (e) {
+        console.warn('AudioContext setup error:', e);
+      }
+
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+      }
+      const recOptions = mimeType ? { mimeType } : {};
+
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(micStream, recOptions);
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+        await uploadAndProcessVoice(audioBlob);
+      };
+
+      mediaRecorder.start(80);
+      isRecording = true;
+      speechActive = false;
+      micBtn.classList.add('active');
+      wakeDot.classList.add('listening');
+      wakeText.textContent = '🎙️ Listening... Speak now (Tap mic when done)';
+
+      runClientVAD();
+    }
+
+    function runClientVAD() {
+      if (!analyserNode || !isRecording) return;
+      const dataArr = new Uint8Array(analyserNode.frequencyBinCount);
+
+      function check() {
+        if (!isRecording) return;
+        analyserNode.getByteFrequencyData(dataArr);
+        let sum = 0;
+        for (let i = 0; i < dataArr.length; i++) sum += dataArr[i];
+        const avg = sum / dataArr.length;
+
+        if (avg > 16) {
+          speechActive = true;
+          if (silenceTimer) {
+            clearTimeout(silenceTimer);
+            silenceTimer = null;
+          }
+        } else if (speechActive) {
+          if (!silenceTimer) {
+            silenceTimer = setTimeout(() => {
+              if (isRecording && speechActive) {
+                stopVoiceRecording();
+              }
+            }, 1400);
+          }
         }
+        requestAnimationFrame(check);
+      }
+      requestAnimationFrame(check);
+    }
+
+    function stopVoiceRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+      }
+      micBtn.classList.remove('active');
+      wakeDot.classList.remove('listening');
+      wakeText.textContent = '⚡ Transcribing & executing with J.A.R.V.I.S....';
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
       }
     }
 
-    // ── Audio Waveform Visualizer Canvas ──────────────────────────────────
+    async function uploadAndProcessVoice(blob) {
+      if (!blob || blob.size < 400) {
+        wakeText.textContent = 'Recording too brief. Tap mic to talk.';
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('file', blob, 'speech.webm');
+
+      try {
+        const res = await fetch('/api/voice', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.transcript) {
+          appendMessage('User', '🎤 ' + data.transcript, false);
+        }
+        if (data.text) {
+          appendMessage('J.A.R.V.I.S.', data.text, true);
+        }
+
+        if (data.audio_url) {
+          wakeText.textContent = '🔊 J.A.R.V.I.S. is speaking...';
+          ttsPlayer.src = data.audio_url + '?t=' + Date.now();
+          ttsPlayer.play().catch(e => console.log('Audio playback notice:', e));
+          animateVisualizer();
+          ttsPlayer.onended = () => {
+            wakeText.textContent = '✦ Voice Ready: Tap mic to speak.';
+          };
+        } else {
+          wakeText.textContent = '✦ Voice Ready: Tap mic to speak.';
+        }
+      } catch (err) {
+        appendMessage('J.A.R.V.I.S.', 'Voice processing error: ' + err, true);
+        wakeText.textContent = 'Error processing voice. Tap mic to retry.';
+      }
+    }
+
+    // ── Visualizer Canvas ──────────────────────────────────────────────
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
     let animId = null;
@@ -762,6 +858,37 @@ INDEX_HTML = """<!DOCTYPE html>
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+
+    function visualizeLiveMic() {
+      if (!analyserNode) return;
+      const bufferLen = analyserNode.frequencyBinCount;
+      const dataArr = new Uint8Array(bufferLen);
+
+      function drawMic() {
+        if (!isRecording) return;
+        analyserNode.getByteTimeDomainData(dataArr);
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ff3366';
+        ctx.beginPath();
+
+        const sliceWidth = canvas.width / bufferLen;
+        let x = 0;
+        for (let i = 0; i < bufferLen; i++) {
+          const v = dataArr[i] / 128.0;
+          const y = (v * canvas.height) / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        ctx.stroke();
+        requestAnimationFrame(drawMic);
+      }
+      drawMic();
+    }
 
     function animateVisualizer() {
       let step = 0;
@@ -789,7 +916,6 @@ INDEX_HTML = """<!DOCTYPE html>
         if (!ttsPlayer.paused) {
           animId = requestAnimationFrame(draw);
         } else {
-          // Flatten line when quiet
           ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.strokeStyle = '#222222';
@@ -830,48 +956,42 @@ def api_action():
     return jsonify(res)
 
 
-@app.route("/api/chat", methods=["POST"])
-def api_chat():
-    """Process text or voice prompt, trigger autonomous actions, return response + audio."""
-    data = request.get_json(force=True, silent=True) or {}
-    prompt = data.get("prompt", "").strip()
-
-    if not prompt:
-        return jsonify({"text": "Awaiting your command, Sir.", "audio_url": None})
+def process_prompt_logic(prompt: str) -> dict[str, Any]:
+    """Execute autonomous actions, free APIs, or Groq LLM inference, return dict with text, spoken, audio_url."""
+    prompt_lower = prompt.lower().strip()
 
     # Instant autonomous action spotting & direct responses (< 1ms)
-    prompt_lower = prompt.lower()
     if "volume up" in prompt_lower or "louder" in prompt_lower:
         execute_device_action("volume_up")
         spoken = "Volume increased by 10%, Sir."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "volume down" in prompt_lower or "quieter" in prompt_lower:
         execute_device_action("volume_down")
         spoken = "Volume decreased by 10%, Sir."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "mute" in prompt_lower:
         execute_device_action("volume_mute")
         spoken = "Mute toggled, Sir."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "clean" in prompt_lower and ("memory" in prompt_lower or "ram" in prompt_lower or "cache" in prompt_lower):
         res = execute_device_action("clean_memory")
         spoken = f"{res.get('message', 'Memory purged')}, Sir."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "lock" in prompt_lower and ("screen" in prompt_lower or "pc" in prompt_lower or "laptop" in prompt_lower):
         execute_device_action("lock_screen")
         spoken = "Screen locked, Sir."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif any(q in prompt_lower for q in ("what's the time", "what is the time", "what time", "tell me the time", "current time", "the time", "time now")) or prompt_lower == "time":
         spoken = f"Sir, the current time is {time.strftime('%I:%M %p')}."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "battery" in prompt_lower:
         tele = get_telemetry()
         spoken = f"Sir, the battery is at {tele.get('battery', 'unknown')}."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     elif "uptime" in prompt_lower or ("how long" in prompt_lower and ("pc" in prompt_lower or "system" in prompt_lower or "on" in prompt_lower)):
         tele = get_telemetry()
         spoken = f"Sir, system uptime is {tele.get('uptime', 'unknown')}."
-        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+        return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
 
     # Free Public APIs Direct Integration
     sys.path.insert(0, "/home/feds/.gemini/antigravity/scratch/free-apis")
@@ -881,55 +1001,100 @@ def api_chat():
             loc = prompt_lower.replace("weather", "").replace("what's the", "").replace("what is the", "").replace("in", "").strip()
             res = query_live_api("weather", loc)
             spoken = f"Weather report: {res}, Sir."
-            return jsonify({
-                "text": spoken,
-                "spoken": spoken,
-                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
-            })
+            return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
         elif any(k in prompt_lower for k in ("bitcoin", "crypto", "btc", "eth")):
             coin = "ethereum" if "eth" in prompt_lower else "bitcoin"
             res = query_live_api("crypto", coin)
             spoken = f"{res}, Sir."
-            return jsonify({
-                "text": spoken,
-                "spoken": spoken,
-                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
-            })
+            return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
         elif "joke" in prompt_lower:
             res = query_live_api("joke")
             spoken = f"Here is one for you, Sir: {res}"
-            return jsonify({
-                "text": spoken,
-                "spoken": spoken,
-                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
-            })
+            return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
         elif "quote" in prompt_lower or "inspiration" in prompt_lower:
             res = query_live_api("quote")
             spoken = f"{res}, Sir."
-            return jsonify({
-                "text": spoken,
-                "spoken": spoken,
-                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
-            })
+            return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
         elif "my ip" in prompt_lower or "public ip" in prompt_lower:
             res = query_live_api("ip")
             spoken = f"{res}, Sir."
-            return jsonify({
-                "text": spoken,
-                "spoken": spoken,
-                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
-            })
+            return {"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"}
     except Exception:
         pass
 
     full_answer, spoken = ask_ai(prompt)
     audio_url = f"/api/tts?text={urllib.parse.quote(spoken)}"
-
-    return jsonify({
+    return {
         "text": full_answer,
         "spoken": spoken,
         "audio_url": audio_url,
-    })
+    }
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    """Process text or voice prompt, trigger autonomous actions, return response + audio."""
+    data = request.get_json(force=True, silent=True) or {}
+    prompt = data.get("prompt", "").strip()
+    if not prompt:
+        return jsonify({"text": "Awaiting your command, Sir.", "audio_url": None})
+    return jsonify(process_prompt_logic(prompt))
+
+
+@app.route("/api/voice", methods=["POST"])
+def api_voice():
+    """Receive recorded voice audio blob from web browser, transcribe, execute, return speech."""
+    if "file" not in request.files:
+        return jsonify({"error": "No audio file received"}), 400
+
+    audio_file = request.files["file"]
+    content = audio_file.read()
+    if len(content) < 400:
+        return jsonify({
+            "transcript": "",
+            "text": "Audio was too short, Sir. Please tap the mic and speak again.",
+            "spoken": "Audio too short, Sir.",
+            "audio_url": None
+        })
+
+    headers = {"Authorization": f"Bearer {GROQ_API_KEY}"}
+    files = {"file": (audio_file.filename or "recording.webm", content, audio_file.content_type or "audio/webm")}
+    data = {"model": "whisper-large-v3-turbo", "language": "en"}
+
+    transcript = ""
+    try:
+        resp = HTTP_CLIENT.post(GROQ_WHISPER_URL, headers=headers, files=files, data=data)
+        if resp.status_code == 200:
+            transcript = resp.json().get("text", "").strip()
+    except Exception as e:
+        return jsonify({"error": f"Transcription failed: {e}"}), 500
+
+    clean_check = re.sub(r"[^\w\s]", "", transcript.lower()).strip()
+    hallucinations = {"", ".", "..", "...", "you", "thank you", "thanks for watching", "subtitles by", "bye"}
+    if clean_check in hallucinations or len(clean_check) < 2:
+        return jsonify({
+            "transcript": "",
+            "text": "I did not detect any spoken words, Sir. Please try again.",
+            "spoken": "I did not detect any speech, Sir.",
+            "audio_url": None
+        })
+
+    # Strip leading "Hey Jarvis" or "Jarvis"
+    wake_match = re.search(r"^\s*(hey\s+jarvis|jarvis)[,:]?\s*", transcript, re.IGNORECASE)
+    prompt = transcript[wake_match.end():].strip() if wake_match else transcript
+
+    if not prompt:
+        spoken = "Yes, Sir? Standing by for your instructions."
+        return jsonify({
+            "transcript": transcript,
+            "text": spoken,
+            "spoken": spoken,
+            "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+        })
+
+    result = process_prompt_logic(prompt)
+    result["transcript"] = transcript
+    return jsonify(result)
 
 
 @app.route("/api/audio/<filename>", methods=["GET"])
