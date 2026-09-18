@@ -24,11 +24,21 @@ import httpx
 import edge_tts
 import qrcode
 import io
+import urllib.parse
 
 app = Flask(__name__)
 CORS(app)
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+if not GROQ_API_KEY:
+    try:
+        with open(Path.home() / ".local/bin/jarvis") as f:
+            for line in f:
+                if "export GROQ_API_KEY=" in line:
+                    GROQ_API_KEY = line.split("=", 1)[1].strip().strip("\"'")
+                    break
+    except Exception:
+        pass
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_WHISPER_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
 DEFAULT_MODEL = "qwen/qwen3.8-27b"
@@ -829,24 +839,39 @@ def api_chat():
     if not prompt:
         return jsonify({"text": "Awaiting your command, Sir.", "audio_url": None})
 
-    # Autonomous action spotting
+    # Instant autonomous action spotting & direct responses (< 1ms)
     prompt_lower = prompt.lower()
-    executed_notice = ""
     if "volume up" in prompt_lower or "louder" in prompt_lower:
         execute_device_action("volume_up")
-        executed_notice = "[Action: Increased volume by 10%]\n"
+        spoken = "Volume increased by 10%, Sir."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
     elif "volume down" in prompt_lower or "quieter" in prompt_lower:
         execute_device_action("volume_down")
-        executed_notice = "[Action: Decreased volume by 10%]\n"
+        spoken = "Volume decreased by 10%, Sir."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
     elif "mute" in prompt_lower:
         execute_device_action("volume_mute")
-        executed_notice = "[Action: Toggled mute]\n"
+        spoken = "Mute toggled, Sir."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
     elif "clean" in prompt_lower and ("memory" in prompt_lower or "ram" in prompt_lower or "cache" in prompt_lower):
         res = execute_device_action("clean_memory")
-        executed_notice = f"[Action: {res.get('message', 'Cleaned')}]\n"
+        spoken = f"{res.get('message', 'Memory purged')}, Sir."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
     elif "lock" in prompt_lower and ("screen" in prompt_lower or "pc" in prompt_lower or "laptop" in prompt_lower):
         execute_device_action("lock_screen")
-        executed_notice = "[Action: Locked session]\n"
+        spoken = "Screen locked, Sir."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+    elif any(q in prompt_lower for q in ("what's the time", "what is the time", "what time", "tell me the time", "current time", "the time", "time now")) or prompt_lower == "time":
+        spoken = f"Sir, the current time is {time.strftime('%I:%M %p')}."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+    elif "battery" in prompt_lower:
+        tele = get_telemetry()
+        spoken = f"Sir, the battery is at {tele.get('battery', 'unknown')}."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
+    elif "uptime" in prompt_lower or ("how long" in prompt_lower and ("pc" in prompt_lower or "system" in prompt_lower or "on" in prompt_lower)):
+        tele = get_telemetry()
+        spoken = f"Sir, system uptime is {tele.get('uptime', 'unknown')}."
+        return jsonify({"text": spoken, "spoken": spoken, "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"})
 
     # Free Public APIs Direct Integration
     sys.path.insert(0, "/home/feds/.gemini/antigravity/scratch/free-apis")
@@ -898,10 +923,6 @@ def api_chat():
         pass
 
     full_answer, spoken = ask_ai(prompt)
-    if executed_notice:
-        full_answer = executed_notice + full_answer
-
-    import urllib.parse
     audio_url = f"/api/tts?text={urllib.parse.quote(spoken)}"
 
     return jsonify({

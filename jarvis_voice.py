@@ -211,6 +211,30 @@ def check_voice_actions(command: str) -> Optional[str]:
         subprocess.run(["loginctl", "lock-session"], capture_output=True)
         return "Workstation locked securely, Sir."
 
+    # Live Free APIs Integration
+    sys.path.insert(0, "/home/feds/.gemini/antigravity/scratch/free-apis")
+    try:
+        from free_apis import query_live_api
+        if "weather" in cmd:
+            loc = cmd.replace("weather", "").replace("what's the", "").replace("what is the", "").replace("in", "").strip()
+            res = query_live_api("weather", loc)
+            return f"Weather report: {res}, Sir."
+        elif any(k in cmd for k in ("bitcoin", "crypto", "btc price", "price of bitcoin")):
+            coin = "ethereum" if "eth" in cmd else "bitcoin"
+            res = query_live_api("crypto", coin)
+            return f"{res}, Sir."
+        elif "joke" in cmd:
+            res = query_live_api("joke")
+            return f"Here is one, Sir: {res}"
+        elif "quote" in cmd or "inspire" in cmd:
+            res = query_live_api("quote")
+            return f"{res}, Sir."
+        elif "my ip" in cmd or "public ip" in cmd:
+            res = query_live_api("ip")
+            return f"{res}, Sir."
+    except Exception:
+        pass
+
     # Exit voice mode
     if any(phrase in cmd for phrase in ["exit voice", "quit voice", "stand down", "close voice", "goodbye jarvis", "exit mode"]):
         return "STAND_DOWN"
@@ -362,8 +386,7 @@ class JarvisVoiceSession:
         files = {"file": ("speech.wav", wav_bytes, "audio/wav")}
         data = {
             "model": "whisper-large-v3-turbo",
-            "language": "en",
-            "prompt": "J.A.R.V.I.S., Sir"
+            "language": "en"
         }
 
         try:
@@ -371,8 +394,13 @@ class JarvisVoiceSession:
             if res.status_code == 200:
                 text = res.json().get("text", "").strip()
                 # Filter out Whisper phantom hallucinations on silence
-                lower = text.lower()
-                if lower in ["thank you.", "thank you", "you", "thanks for watching!", "bye.", ""]:
+                clean_lower = re.sub(r"[^\w\s]", "", text.lower()).strip()
+                hallucinations = {
+                    "", ".", "..", "...", "you", "thank you", "thank you very much",
+                    "thanks for watching", "subtitles by", "system", "terminal",
+                    "system terminal", "bye", "goodbye", "yeah", "so", "oh", "um", "ah", "okay", "ok"
+                }
+                if clean_lower in hallucinations or len(clean_lower) < 2:
                     return ""
                 return text
         except Exception:
@@ -408,30 +436,30 @@ class JarvisVoiceSession:
 
         try:
             with HTTP_CLIENT.stream("POST", GROQ_COMPLETIONS_URL, headers=headers, json=payload) as response:
-                    for line in response.iter_lines():
-                        if line.startswith("data: ") and line != "data: [DONE]":
-                            import json
-                            try:
-                                chunk_json = json.loads(line[6:])
-                                delta = chunk_json["choices"][0]["delta"].get("content", "")
-                                if delta:
-                                    console.print(delta, end="")
-                                    current_sentence += delta
-                                    full_reply += delta
+                for line in response.iter_lines():
+                    if line.startswith("data: ") and line != "data: [DONE]":
+                        import json
+                        try:
+                            chunk_json = json.loads(line[6:])
+                            delta = chunk_json["choices"][0]["delta"].get("content", "")
+                            if delta:
+                                console.print(delta, end="")
+                                current_sentence += delta
+                                full_reply += delta
 
-                                    # Check for complete sentence boundary OR clause (>14 words)
-                                    parts = sentence_delimiters.split(current_sentence)
-                                    if len(parts) > 1:
-                                        finished_sentence = parts[0] + parts[1]
-                                        self.speech_pipeline.enqueue(finished_sentence)
-                                        current_sentence = "".join(parts[2:])
-                                    elif len(current_sentence.split()) >= 14 and "," in current_sentence:
-                                        comma_idx = current_sentence.rfind(",")
-                                        finished_clause = current_sentence[:comma_idx + 1]
-                                        self.speech_pipeline.enqueue(finished_clause)
-                                        current_sentence = current_sentence[comma_idx + 1:].lstrip()
-                            except Exception:
-                                pass
+                                # Check for complete sentence boundary OR clause (>14 words)
+                                parts = sentence_delimiters.split(current_sentence)
+                                if len(parts) > 1:
+                                    finished_sentence = parts[0] + parts[1]
+                                    self.speech_pipeline.enqueue(finished_sentence)
+                                    current_sentence = "".join(parts[2:])
+                                elif len(current_sentence.split()) >= 14 and "," in current_sentence:
+                                    comma_idx = current_sentence.rfind(",")
+                                    finished_clause = current_sentence[:comma_idx + 1]
+                                    self.speech_pipeline.enqueue(finished_clause)
+                                    current_sentence = current_sentence[comma_idx + 1:].lstrip()
+                        except Exception:
+                            pass
 
             # Enqueue any trailing remainder
             if current_sentence.strip():
