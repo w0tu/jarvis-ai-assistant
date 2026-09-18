@@ -138,9 +138,8 @@ def open_jarvis_terminal(cmd: str = ""):
 
 
 def process_command(cmd: str):
-    """Send voice command to J.A.R.V.I.S. hub."""
+    """Send voice command to J.A.R.V.I.S. hub and respond purely in the background."""
     print(f"\n✦ [HEY JARVIS TRIGGERED]: \"{cmd}\"")
-    subprocess.run(["notify-send", "-i", "audio-input-microphone", "J.A.R.V.I.S.", f"Heard: {cmd}"], capture_output=True)
 
     try:
         resp = HTTP_CLIENT.post(HUB_CHAT_URL, json={"prompt": cmd})
@@ -148,6 +147,7 @@ def process_command(cmd: str):
             data = resp.json()
             spoken = data.get("spoken", "Completed, Sir.")
             print(f"✦ J.A.R.V.I.S. Response: {spoken}")
+            subprocess.run(["notify-send", "-i", "audio-input-microphone", "J.A.R.V.I.S.", spoken], capture_output=True)
             speak(spoken)
         else:
             speak("I encountered an issue contacting the hub, Sir.")
@@ -213,8 +213,9 @@ def listen_loop():
                                     if CHIME_PING.exists():
                                         play_sound(CHIME_PING, async_play=True)
 
-                                    open_jarvis_terminal(cmd=clean_cmd)
+                                    # Respond purely in background via audio & desktop notification
                                     if not clean_cmd:
+                                        subprocess.run(["notify-send", "-i", "audio-input-microphone", "J.A.R.V.I.S.", "Wake-word acknowledged. Standing by, Sir."], capture_output=True)
                                         speak("Yes, Sir? How may I assist you?")
                                     else:
                                         process_command(clean_cmd)

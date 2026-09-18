@@ -844,12 +844,58 @@ def api_chat():
     elif "clean" in prompt_lower and ("memory" in prompt_lower or "ram" in prompt_lower or "cache" in prompt_lower):
         res = execute_device_action("clean_memory")
         executed_notice = f"[Action: {res.get('message', 'Cleaned')}]\n"
-    elif "sync" in prompt_lower and "git" in prompt_lower:
-        res = execute_device_action("daily_sync")
-        executed_notice = f"[Action: {res.get('message', 'Synced')}]\n"
     elif "lock" in prompt_lower and ("screen" in prompt_lower or "pc" in prompt_lower or "laptop" in prompt_lower):
         execute_device_action("lock_screen")
         executed_notice = "[Action: Locked session]\n"
+
+    # Free Public APIs Direct Integration
+    sys.path.insert(0, "/home/feds/.gemini/antigravity/scratch/free-apis")
+    try:
+        from free_apis import query_live_api
+        if "weather" in prompt_lower:
+            loc = prompt_lower.replace("weather", "").replace("what's the", "").replace("what is the", "").replace("in", "").strip()
+            res = query_live_api("weather", loc)
+            spoken = f"Weather report: {res}, Sir."
+            return jsonify({
+                "text": spoken,
+                "spoken": spoken,
+                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+            })
+        elif any(k in prompt_lower for k in ("bitcoin", "crypto", "btc", "eth")):
+            coin = "ethereum" if "eth" in prompt_lower else "bitcoin"
+            res = query_live_api("crypto", coin)
+            spoken = f"{res}, Sir."
+            return jsonify({
+                "text": spoken,
+                "spoken": spoken,
+                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+            })
+        elif "joke" in prompt_lower:
+            res = query_live_api("joke")
+            spoken = f"Here is one for you, Sir: {res}"
+            return jsonify({
+                "text": spoken,
+                "spoken": spoken,
+                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+            })
+        elif "quote" in prompt_lower or "inspiration" in prompt_lower:
+            res = query_live_api("quote")
+            spoken = f"{res}, Sir."
+            return jsonify({
+                "text": spoken,
+                "spoken": spoken,
+                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+            })
+        elif "my ip" in prompt_lower or "public ip" in prompt_lower:
+            res = query_live_api("ip")
+            spoken = f"{res}, Sir."
+            return jsonify({
+                "text": spoken,
+                "spoken": spoken,
+                "audio_url": f"/api/tts?text={urllib.parse.quote(spoken)}"
+            })
+    except Exception:
+        pass
 
     full_answer, spoken = ask_ai(prompt)
     if executed_notice:
